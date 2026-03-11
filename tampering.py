@@ -1,5 +1,6 @@
 import cv2
 
+
 def detect_blur(image):
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

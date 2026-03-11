@@ -1,5 +1,3 @@
-import numpy as np
-
 def validate_image(image):
 
     height, width = image.shape[:2]
