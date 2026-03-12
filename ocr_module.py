@@ -1,19 +1,34 @@
-import pytesseract
+import easyocr
 import cv2
-from PIL import Image
 
+reader = easyocr.Reader(['en'], gpu=False)
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+def preprocess(image):
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    gray = cv2.resize(gray,None,fx=2,fy=2,interpolation=cv2.INTER_CUBIC)
+
+    gray = cv2.bilateralFilter(gray,11,17,17)
+
+    return gray
 
 
 def extract_text(image):
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    h, w = image.shape[:2]
 
-    gray = cv2.threshold(gray,150,255,cv2.THRESH_BINARY)[1]
+    crop = image[int(h*0.2):int(h*0.8), int(w*0.1):int(w*0.9)]
 
-    pil_image = Image.fromarray(gray)
+    processed = preprocess(crop)
 
-    text = pytesseract.image_to_string(pil_image)
+    results = reader.readtext(processed)
 
-    return text
+    words = []
+
+    for (bbox, text, prob) in results:
+
+        if prob > 0.5:
+            words.append(text)
+
+    return " ".join(words)

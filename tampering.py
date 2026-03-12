@@ -1,25 +1,32 @@
 import cv2
-
-
-def detect_blur(image):
-
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    score = cv2.Laplacian(gray, cv2.CV_64F).var()
-
-    if score < 50:
-        return "Blur Detected (Suspicious)"
-    else:
-        return "Image Clear"
-
+import numpy as np
 
 def edge_analysis(image):
 
-    edges = cv2.Canny(image,100,200)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    edge_pixels = edges.sum()
+    edges = cv2.Canny(gray,50,150)
 
-    if edge_pixels < 10000:
-        return "Low Edge Details (Possible Tampering)"
+    density = np.sum(edges>0)/edges.size
+
+    if density < 0.01:
+        return "Low Edge Detail"
+
+    elif density < 0.03:
+        return "Moderate Edge Structure"
+
     else:
         return "Normal Edge Structure"
+
+
+def detect_noise(image):
+
+    gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+
+    noise = np.std(gray)
+
+    if noise > 60:
+        return "High Noise"
+
+    else:
+        return "Normal Noise Level"

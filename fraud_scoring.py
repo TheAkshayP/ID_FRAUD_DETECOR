@@ -1,53 +1,83 @@
-def calculate_fraud_score(validation, blur, edge, text):
+def calculate_fraud_score(validation,sharpness,brightness,contrast,edge,noise,ela,text):
 
     score = 0
 
-    # Image validation check
     if validation != "Valid Image":
-        score += 30
-
-    # Blur detection check
-    if "Blur" in blur:
-        score += 25
-
-    # Edge anomaly check
-    if "Possible" in edge:
-        score += 25
-
-    # OCR text length check
-    if len(text.strip()) < 50:
         score += 20
 
-    return score
+    if sharpness < 80:
+        score += 20
+
+    if brightness in ["Too Dark","Too Bright"]:
+        score += 15
+
+    if contrast == "Low Contrast":
+        score += 10
+
+    if "Low Edge" in edge:
+        score += 15
+
+    if "High Noise" in noise:
+        score += 15
+
+    if "High Compression" in ela:
+        score += 20
+
+    if len(text.strip()) < 40:
+        score += 10
+
+    keywords = ["DOB","NAME","LICENSE","ID"]
+
+    if not any(k in text.upper() for k in keywords):
+        score += 15
+
+    return min(score,100)
 
 
 def risk_level(score):
 
-    if score <= 30:
+    if score < 30:
         return "Low Risk"
 
-    elif score <= 60:
+    elif score < 60:
         return "Medium Risk"
 
     else:
         return "High Risk"
 
 
-def fraud_reasons(validation, blur, edge, text):
+def fraud_reasons(validation,sharpness,brightness,contrast,edge,noise,ela,text):
 
-    reasons = []
+    reasons=[]
 
     if validation != "Valid Image":
-        reasons.append("Image resolution is too low")
+        reasons.append("Image resolution too low")
 
-    if "Blur" in blur:
-        reasons.append("Blur detected in the document")
+    if sharpness < 80:
+        reasons.append("Image appears blurry")
 
-    if "Possible" in edge:
-        reasons.append("Edge inconsistencies detected in the image")
+    if brightness in ["Too Dark","Too Bright"]:
+        reasons.append("Lighting abnormal")
 
-    if len(text.strip()) < 50:
-        reasons.append("Low OCR text extraction")
+    if contrast == "Low Contrast":
+        reasons.append("Low contrast detected")
+
+    if "Low Edge" in edge:
+        reasons.append("Edge structure abnormal")
+
+    if "High Noise" in noise:
+        reasons.append("High noise detected")
+
+    if "High Compression" in ela:
+        reasons.append("Compression artifacts detected")
+
+    if len(text.strip()) < 40:
+        reasons.append("Low OCR readability")
+
+    keywords=["DOB","NAME","LICENSE"]
+
+    if not any(k in text.upper() for k in keywords):
+        reasons.append("Expected ID keywords missing")
 
     if not reasons:
         reasons.append("No suspicious indicators detected")
