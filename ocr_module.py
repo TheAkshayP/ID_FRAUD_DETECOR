@@ -12,7 +12,6 @@ def preprocess(image):
 
 
 def extract_text(image):
-
     h, w = image.shape[:2]
     crop = image[int(h*0.2):int(h*0.8), int(w*0.1):int(w*0.9)]
 
@@ -24,20 +23,45 @@ def extract_text(image):
         if prob > 0.5:
             words.append(text)
 
-    return " ".join(words)
+    text = " ".join(words)
+
+    # Clean OCR noise
+    text = text.replace("T /", "")
+    text = text.replace("|", "")
+    text = text.replace(";", " ")
+    text = text.replace(",", " ")
+    text = text.replace("  ", " ")
+
+    return text.strip()
 
 
-# 🔥 NEW
 def extract_fields(text):
 
+    text = text.upper()
     data = {}
 
-    name = re.findall(r"Name[:\s]+([A-Z ]+)", text.upper())
-    dob = re.findall(r"\d{2}/\d{2}/\d{4}", text)
-    id_number = re.findall(r"[A-Z0-9]{8,}", text)
+    # NAME (fixed)
+    name_match = re.search(
+        r"NAME\s*[:\-]?\s*([A-Z ]+?)(?:\s+DOB|\s+DATE|\s+GENDER|\s+MALE|\s+FEMALE|$)",
+        text
+    )
+    data["name"] = name_match.group(1).strip() if name_match else None
 
-    data["name"] = name[0] if name else None
-    data["dob"] = dob[0] if dob else None
-    data["id_number"] = id_number[0] if id_number else None
+    # DOB
+    dob_match = re.search(r"\b\d{2}/\d{2}/\d{4}\b", text)
+    data["dob"] = dob_match.group(0) if dob_match else None
+
+    # Aadhaar (12 digit robust)
+    aadhaar_match = re.search(r"\d{12}", text.replace(" ", ""))
+
+    # PAN
+    pan_match = re.search(r"[A-Z]{5}[0-9]{4}[A-Z]", text)
+
+    if aadhaar_match:
+        data["id_number"] = aadhaar_match.group(0)
+    elif pan_match:
+        data["id_number"] = pan_match.group(0)
+    else:
+        data["id_number"] = None
 
     return data

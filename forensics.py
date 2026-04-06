@@ -14,9 +14,10 @@ def error_level_analysis(image):
     ela = np.abs(np.array(original) - np.array(compressed))
     ela_mean = np.mean(ela)
 
-    if ela_mean > 15:
+    # 🔥 More refined thresholds
+    if ela_mean > 18:
         return "High Compression Artifacts"
-    elif ela_mean > 8:
+    elif ela_mean > 10:
         return "Moderate Compression Artifacts"
     else:
         return "Normal Compression Pattern"

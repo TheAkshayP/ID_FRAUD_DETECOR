@@ -14,9 +14,9 @@ def brightness_analysis(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     brightness = np.mean(gray)
 
-    if brightness < 60:
+    if brightness < 50:
         return "Too Dark"
-    elif brightness > 220:
+    elif brightness > 230:
         return "Too Bright"
     else:
         return "Normal Lighting"
@@ -27,7 +27,9 @@ def contrast_analysis(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     contrast = gray.std()
 
-    if contrast < 40:
+    if contrast < 30:
         return "Low Contrast"
+    elif contrast < 50:
+        return "Moderate Contrast"
     else:
         return "Normal Contrast"
